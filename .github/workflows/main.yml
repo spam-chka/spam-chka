@@ -18,10 +18,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/download-artifact@v3
-        with:
-          name: app-build
-          path: build/
       - run: |
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME:$IMAGE_TAG
