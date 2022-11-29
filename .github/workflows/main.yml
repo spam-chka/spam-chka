@@ -1,0 +1,27 @@
+name: main
+run-name: Основной сценарий
+
+on:
+  push
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/spam-chka
+  IMAGE_TAG: latest
+
+jobs:
+  publish-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/download-artifact@v3
+        with:
+          name: app-build
+          path: build/
+      - run: |
+          docker build -t $IMAGE_NAME .
+          docker push $IMAGE_NAME:$IMAGE_TAG
