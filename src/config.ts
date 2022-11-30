@@ -1,6 +1,6 @@
 // if a user writes a message within KICK_THRESHOLD_SECONDS after joining,
 // he/she will be considered a spamer
-export const KICK_THRESHOLD_SECONDS = 7;
+export const KICK_THRESHOLD_SECONDS = 15;
 
 // server port
 export const PORT = process.env.SPAM_CHKA_PORT || 3000;

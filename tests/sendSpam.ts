@@ -4,7 +4,7 @@ import {MessagesSendParams, MessagesSendResponse} from "@vkontakte/api-schema-ty
 
 const url = `https://api.vk.com/method/messages.send`;
 const params: MessagesSendParams = {
-    peer_id: 2000000001,
+    peer_id: 2000000002,
     random_id: Math.round(Math.random() * 10005000),
     message: "spam"
 };
