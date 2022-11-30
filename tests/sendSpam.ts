@@ -6,7 +6,7 @@ const url = `https://api.vk.com/method/messages.send`;
 const params: MessagesSendParams = {
     peer_id: 2000000002,
     random_id: Math.round(Math.random() * 10005000),
-    message: "spam"
+    message: "Привет! Как я рад тебя видеть!"
 };
 axios.get(url, {
     params: {
