@@ -36,13 +36,19 @@ export default function messageNew(req: Request, res: Response) {
         insertJoin({...joinId, ts: date});
     } else {
         if (date - selectJoin(joinId) < KICK_THRESHOLD_SECONDS) {
+            console.log("kickStart", joinId.peer_id, joinId.member_id, date);
             // kick user
-            kickMember(joinId).catch(err => {
-                console.error("kick", joinId.peer_id, joinId.member_id, date, err?.error_code);
+            kickMember(joinId).then(() => {
+                console.log("kickFinish", joinId.peer_id, joinId.member_id, date);
+            }).catch(err => {
+                console.error("kickError", joinId.peer_id, joinId.member_id, date, err?.error_code);
             });
+            console.log("deleteStart", joinId.peer_id, joinId.member_id, date);
             // remove his message
-            deleteMessage({conversation_message_id, peer_id}).catch(err => {
-                console.error("delmsg", joinId.peer_id, joinId.member_id, date, err?.error_code);
+            deleteMessage({conversation_message_id, peer_id}).then(() => {
+                console.log("deleteFinish", joinId.peer_id, joinId.member_id, date);
+            }).catch(err => {
+                console.error("deleteError", joinId.peer_id, joinId.member_id, date, err?.error_code);
             });
         }
     }
