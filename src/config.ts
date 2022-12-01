@@ -18,5 +18,5 @@ export const VK_GROUP_TOKEN = process.env.SPAM_CHKA_TOKEN || "";
 export const VK_API_VERSION = "5.131";
 
 // join action types
-export const VK_JOIN_ACTION_TYPES = ["chat_invite_user", "chat_invite_user_by_link"];
-
+export const VK_JOIN_ACTION_INVITE = "chat_invite_user";
+export const VK_JOIN_ACTION_LINK = "chat_invite_user_by_link";

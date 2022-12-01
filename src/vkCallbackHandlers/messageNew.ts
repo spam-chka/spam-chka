@@ -3,7 +3,7 @@ import {MessagesMessage} from "@vkontakte/api-schema-typescript";
 import {VKRequestBody} from "./vkRequestTypes";
 import kickMember from "../vkApi/kickMember";
 import deleteMessage from "../vkApi/deleteMessage";
-import {KICK_THRESHOLD_SECONDS, VK_JOIN_ACTION_TYPES} from "../config";
+import {KICK_THRESHOLD_SECONDS, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
 import {insertJoin, JoinId, selectJoin} from "../db";
 
 type MessageNewBody = VKRequestBody & {
@@ -26,12 +26,14 @@ export default function messageNew(req: Request, res: Response) {
         member_id: from_id
     };
 
-    if (action && action.member_id && action.type) {
-        if (VK_JOIN_ACTION_TYPES.includes(action.type)) {
+    if (action && action.type && [VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK].includes(action?.type)) {
+        if (action.type === VK_JOIN_ACTION_INVITE) {
             joinId.member_id = action.member_id;
-            console.log("join", joinId.peer_id, joinId.member_id, date);
-            insertJoin({...joinId, ts: date});
+        } else {
+            joinId.member_id = from_id;
         }
+        console.log("join", joinId.peer_id, joinId.member_id, date);
+        insertJoin({...joinId, ts: date});
     } else {
         if (date - selectJoin(joinId) < KICK_THRESHOLD_SECONDS) {
             // kick user
