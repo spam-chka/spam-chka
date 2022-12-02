@@ -12,11 +12,20 @@ type MessageNewBody = VKRequestBody & {
     }
 }
 
+function isSpamMessage(text: string): boolean {
+    try {
+        const url = new URL(text);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 export default function messageNew(req: Request, res: Response) {
     const {
         object: {
             message: {
-                action, peer_id, date, from_id, conversation_message_id
+                action, peer_id, date, from_id, conversation_message_id, text
             }
         }
     }: MessageNewBody = req.body;
@@ -35,7 +44,7 @@ export default function messageNew(req: Request, res: Response) {
         console.log("join", joinId.peer_id, joinId.member_id, date);
         insertJoin({...joinId, ts: date});
     } else {
-        if (date - selectJoin(joinId) < KICK_THRESHOLD_SECONDS) {
+        if (date - selectJoin(joinId) < KICK_THRESHOLD_SECONDS && isSpamMessage(text)) {
             console.log("kickStart", joinId.peer_id, joinId.member_id, date);
             // kick user
             kickMember(joinId).then(() => {
@@ -54,3 +63,4 @@ export default function messageNew(req: Request, res: Response) {
     }
     return res.send("ok");
 }
+
