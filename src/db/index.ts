@@ -1,5 +1,9 @@
+import {SpamChkaLocale} from "../l18n";
+import {DEFAULT_LOCALE} from "../config";
+
 const db = {
-    joins: {}
+    joins: {},
+    locales: {}
 };
 
 export type JoinId = {
@@ -32,4 +36,20 @@ export function deleteJoin({peer_id, member_id}: DeleteJoinParams) {
     if (db.joins[peer_id] && db.joins[peer_id][member_id]) {
         delete db.joins[peer_id][member_id];
     }
+}
+
+export type GetLocaleParams = {
+    peer_id: number
+};
+
+export type SetLocaleParams = GetLocaleParams & {
+    locale: SpamChkaLocale
+}
+
+export function setLocale({peer_id, locale}: SetLocaleParams) {
+    db.locales[peer_id] = locale;
+}
+
+export function getLocale({peer_id}: GetLocaleParams) {
+    return db.locales[peer_id] || DEFAULT_LOCALE;
 }

@@ -1,0 +1,31 @@
+import {getLocale} from "./db";
+import format from "./formatString";
+
+export type SpamChkaLocale = "en" | "ru";
+
+export type SmapChkaLocalization = {
+    confirmMessage: string,
+    confirmButton: string
+}
+
+export type SpamChkaLocalizations = {
+    [L in SpamChkaLocale]: SmapChkaLocalization
+};
+
+const localizations: SpamChkaLocalizations = {
+    en: {
+        confirmMessage: "Hey, @{member_id}! Sorry, you look like a bot. Confirm you're not in {kick_delay} or I'll have to kick you :(",
+        confirmButton: "I am not a bot"
+    },
+    ru: {
+        confirmMessage: "Добро пожаловать, @{member_id}! К сожалению, Ваш аккаунт выглядит как бот. Подтвердите, что это не так или мне придется исключить Вас :(",
+        confirmButton: "Я не бот"
+    }
+}
+
+export default function __(key: keyof SmapChkaLocalization, peer_id: number, repl?: object) {
+    const locale = getLocale({peer_id});
+    const localization = localizations[locale];
+    return format(localization[key], repl || {});
+}
+

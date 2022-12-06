@@ -20,3 +20,6 @@ export const VK_API_VERSION = "5.131";
 // join action types
 export const VK_JOIN_ACTION_INVITE = "chat_invite_user";
 export const VK_JOIN_ACTION_LINK = "chat_invite_user_by_link";
+
+// l18n
+export const DEFAULT_LOCALE = process.env.SPAM_CHKA_DEFAULT_LOCALE || "en";

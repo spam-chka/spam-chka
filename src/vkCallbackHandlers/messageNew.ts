@@ -5,6 +5,7 @@ import kickMember from "../vkApi/kickMember";
 import deleteMessage from "../vkApi/deleteMessage";
 import {KICK_THRESHOLD_SECONDS, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
 import {insertJoin, JoinId, selectJoin} from "../db";
+import {sendConfirmationMessage} from "../vkApi/sendMessage";
 
 type MessageNewBody = VKRequestBody & {
     object: {
@@ -43,24 +44,29 @@ export default function messageNew(req: Request, res: Response) {
         }
         console.log("join", joinId.peer_id, joinId.member_id, date);
         insertJoin({...joinId, ts: date});
-    } else {
-        if (date - selectJoin(joinId) < KICK_THRESHOLD_SECONDS && isSpamMessage(text)) {
-            console.log("kickStart", joinId.peer_id, joinId.member_id, date);
-            // kick user
-            kickMember(joinId).then(() => {
-                console.log("kickFinish", joinId.peer_id, joinId.member_id, date);
-            }).catch(err => {
-                console.error("kickError", joinId.peer_id, joinId.member_id, date, err?.error_code);
+        if (1) {
+            sendConfirmationMessage(joinId).then(() => {
+                console.log("sendConfirm", joinId.peer_id, joinId.member_id, date);
             });
-            console.log("deleteStart", joinId.peer_id, joinId.member_id, date);
-            // remove his message
-            deleteMessage({conversation_message_id, peer_id}).then(() => {
-                console.log("deleteFinish", joinId.peer_id, joinId.member_id, date);
-            }).catch(err => {
-                console.error("deleteError", joinId.peer_id, joinId.member_id, date, err?.error_code);
-            });
+        } else {
+            if (date - selectJoin(joinId) < KICK_THRESHOLD_SECONDS && isSpamMessage(text)) {
+                console.log("kickStart", joinId.peer_id, joinId.member_id, date);
+                // kick user
+                kickMember(joinId).then(() => {
+                    console.log("kickFinish", joinId.peer_id, joinId.member_id, date);
+                }).catch(err => {
+                    console.error("kickError", joinId.peer_id, joinId.member_id, date, err?.error_code);
+                });
+                console.log("deleteStart", joinId.peer_id, joinId.member_id, date);
+                // remove his message
+                deleteMessage({conversation_message_id, peer_id}).then(() => {
+                    console.log("deleteFinish", joinId.peer_id, joinId.member_id, date);
+                }).catch(err => {
+                    console.error("deleteError", joinId.peer_id, joinId.member_id, date, err?.error_code);
+                });
+            }
         }
+        return res.send("ok");
     }
-    return res.send("ok");
-}
 
+}
