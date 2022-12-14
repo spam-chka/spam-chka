@@ -1,4 +1,4 @@
-import {MessagesKeyboard, MessagesSendParams} from "@vkontakte/api-schema-typescript";
+import {MessagesKeyboard, MessagesSendParams, MessagesSendResponse} from "@vkontakte/api-schema-typescript";
 import callVKAPI from "./vkApi";
 import __ from "../l18n";
 
@@ -8,11 +8,17 @@ export type SendMessageParams = {
     keyboard?: Partial<MessagesKeyboard>
 }
 
-export default function sendMessage(params: SendMessageParams) {
-    return callVKAPI<MessagesSendParams, MessagesSendParams>("messages.send", {
+export type SendMessageResponse = {
+    conversation_message_id: number,
+    peer_id: number,
+    message_id: number
+}[];
+
+export default function sendMessage(params: SendMessageParams): Promise<SendMessageResponse> {
+    return callVKAPI<MessagesSendParams, SendMessageResponse>("messages.send", {
         message: params.text,
         keyboard: JSON.stringify(params.keyboard),
-        peer_id: params.peer_id,
+        peer_ids: `${params.peer_id}`,
         random_id: Math.round(Math.random() * 1e15)
     });
 }
@@ -22,8 +28,14 @@ export type SendConfirmationMessageParams = {
     member_id,
 }
 
-export function sendConfirmationMessage({peer_id, member_id}: SendConfirmationMessageParams) {
-    return sendMessage({
+export type SendConfirmationMessageResponse = number
+
+export async function sendConfirmationMessage(
+    {
+        peer_id,
+        member_id
+    }: SendConfirmationMessageParams): Promise<SendConfirmationMessageResponse> {
+    const [response]: SendMessageResponse = await sendMessage({
         peer_id, text: __(
             "confirmMessage",
             peer_id,
@@ -38,7 +50,7 @@ export function sendConfirmationMessage({peer_id, member_id}: SendConfirmationMe
                         action: {
                             type: "callback",
                             label: __("confirmButton", peer_id, {}),
-                            payload: JSON.stringify({"confirm_peer_id": peer_id}),
+                            payload: JSON.stringify({"type": "confirm"}),
                         },
                     }
                 ]
@@ -46,4 +58,5 @@ export function sendConfirmationMessage({peer_id, member_id}: SendConfirmationMe
             inline: true
         }
     });
+    return response.conversation_message_id;
 }
