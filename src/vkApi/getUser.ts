@@ -7,8 +7,8 @@ export type GetUserParams = {
 
 export type User = {
     id: number,
-    first_name: string,
-    last_name: string,
+    //first_name: string,
+    //last_name: string,
     deactivated: boolean,
     has_photo: boolean,
     friends_count: number
@@ -32,8 +32,8 @@ export default async function getUser({user_id}: GetUserParams): Promise<User> {
     }
     return {
         id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        //first_name: user.first_name,
+        //last_name: user.last_name,
         deactivated: "deactivated" in user,
         has_photo: user.has_photo === 1,
         friends_count: friendsResponse.count
