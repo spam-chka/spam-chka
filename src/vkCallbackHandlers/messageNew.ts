@@ -36,7 +36,7 @@ async function memberNeedsConfirm(member_id: number): Promise<boolean> {
         if (user.friends_count === 0 || user.deactivated) {
             return true;
         }
-        return !!(!user.has_photo && (user.first_name + user.last_name).toLowerCase().match(/^[a-z\-]*$/));
+        return !!(!user.has_photo && true /*(user.first_name + user.last_name).toLowerCase().match(/^[a-z\-]*$/)*/);
     }
     return true;
 }
