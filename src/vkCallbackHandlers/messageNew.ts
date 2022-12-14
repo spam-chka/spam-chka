@@ -1,8 +1,7 @@
 import {Request, Response} from "express";
 import {MessagesMessage} from "@vkontakte/api-schema-typescript";
 import {VKRequestBody} from "./vkRequestTypes";
-import kickMember, {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
-import deleteMessage from "../vkApi/deleteMessage";
+import {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
 import {KICK_THRESHOLD_SECONDS, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
 import {insertJoin, Join, JoinId, selectJoin, updateJoin} from "../db";
 import {sendConfirmationMessage} from "../vkApi/sendMessage";

@@ -3,13 +3,13 @@ import format from "./formatString";
 
 export type SpamChkaLocale = "en" | "ru";
 
-export type SmapChkaLocalization = {
+export type SpamChkaLocalization = {
     confirmMessage: string,
     confirmButton: string
 }
 
 export type SpamChkaLocalizations = {
-    [L in SpamChkaLocale]: SmapChkaLocalization
+    [L in SpamChkaLocale]: SpamChkaLocalization
 };
 
 const localizations: SpamChkaLocalizations = {
@@ -23,7 +23,7 @@ const localizations: SpamChkaLocalizations = {
     }
 }
 
-export default function __(key: keyof SmapChkaLocalization, peer_id: number, repl?: object) {
+export default function __(key: keyof SpamChkaLocalization, peer_id: number, repl?: object) {
     const locale = getLocale({peer_id});
     const localization = localizations[locale];
     return format(localization[key], repl || {});

@@ -1,4 +1,4 @@
-import {selectUnconfimedJoins, updateJoin} from "../db";
+import {selectUnconfimedJoins} from "../db";
 import {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
 
 export default function cleanNotConfirmed() {

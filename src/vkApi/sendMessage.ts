@@ -1,4 +1,4 @@
-import {MessagesKeyboard, MessagesSendParams, MessagesSendResponse} from "@vkontakte/api-schema-typescript";
+import {MessagesKeyboard, MessagesSendParams} from "@vkontakte/api-schema-typescript";
 import callVKAPI from "./vkApi";
 import __ from "../l18n";
 import {KICK_UNCONFIRMED_THRESHOLD_SECONDS} from "../config";
