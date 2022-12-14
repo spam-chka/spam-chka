@@ -1,5 +1,5 @@
 import axios from "axios";
-import {MessagesSendParams, MessagesSendResponse} from "@vkontakte/api-schema-typescript";
+import {MessagesSendParams} from "@vkontakte/api-schema-typescript";
 
 
 const url = `https://api.vk.com/method/messages.send`;
