@@ -1,5 +1,5 @@
 import {SpamChkaLocale} from "../l18n";
-import {DEFAULT_LOCALE} from "../config";
+import {DEFAULT_LOCALE, KICK_UNCONFIRMED_THRESHOLD_SECONDS} from "../config";
 
 const db = {
     joins: {},
@@ -47,6 +47,23 @@ export function selectJoin({peer_id, member_id}: SelectJoinParams): Join {
         return {peer_id, member_id, ...db.joins[peer_id][member_id]};
     }
     return {peer_id, member_id, ts: -1, needs_confirm: false, confirmed: false};
+}
+
+export function selectUnconfimedJoins(): Join[] {
+    const joins = [];
+    for (let peer_id in db.joins) {
+        for (let member_id in db.joins[peer_id]) {
+            const join: Join = db.joins[peer_id][member_id];
+            if (!join.confirmed && join.needs_confirm &&
+                (new Date()).getTime() / 1000 - join.ts > KICK_UNCONFIRMED_THRESHOLD_SECONDS
+            ) {
+                joins.push({
+                    peer_id, member_id, ...join
+                });
+            }
+        }
+    }
+    return joins;
 }
 
 export type GetLocaleParams = {

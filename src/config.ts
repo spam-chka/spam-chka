@@ -2,6 +2,10 @@
 // he/she will be considered a spamer
 export const KICK_THRESHOLD_SECONDS = 120;
 
+// if user does not confirm himself within KICK_UNCONFIRMED_THRESHOLD_SECONDS after joining,
+// he/she will be kicked
+export const KICK_UNCONFIRMED_THRESHOLD_SECONDS = 120;
+
 // server port
 export const PORT = process.env.SPAM_CHKA_PORT || 3000;
 

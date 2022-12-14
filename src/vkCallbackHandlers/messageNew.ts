@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
 import {MessagesMessage} from "@vkontakte/api-schema-typescript";
 import {VKRequestBody} from "./vkRequestTypes";
-import kickMember from "../vkApi/kickMember";
+import kickMember, {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
 import deleteMessage from "../vkApi/deleteMessage";
 import {KICK_THRESHOLD_SECONDS, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
 import {insertJoin, Join, JoinId, selectJoin, updateJoin} from "../db";
@@ -24,7 +24,6 @@ function isSpamMessage(text: string): boolean {
 }
 
 function messageNeedsDeletion(join: Join, message: Pick<MessagesMessage, "date" | "text">): boolean {
-    console.log(join);
     if (join.needs_confirm && !join.confirmed) {
         return true;
     }
@@ -66,7 +65,7 @@ export default function messageNew(req: Request, res: Response) {
         memberNeedsConfirm(joinId.member_id).then(needs_confirm => {
             const join: Join = {
                 ...joinId,
-                needs_confirm: true,
+                needs_confirm,
                 confirmed: false,
                 ts: date
             };
@@ -77,32 +76,14 @@ export default function messageNew(req: Request, res: Response) {
                     console.log("sendConfirm", joinId.peer_id, joinId.member_id, date);
                     join.confirm_id = confirm_id;
                     updateJoin(join);
+                    console.log(join);
                 }).catch(console.error);
             }
         });
     } else {
         const join = selectJoin(joinId);
         if (messageNeedsDeletion(join, {date, text})) {
-            console.log("kickStart", joinId.peer_id, joinId.member_id, date);
-            // kick user
-            kickMember(joinId).then(() => {
-                console.log("kickFinish", joinId.peer_id, joinId.member_id, date);
-            }).catch(err => {
-                console.error("kickError", joinId.peer_id, joinId.member_id, date, err?.error_code);
-            });
-            console.log("deleteStart", joinId.peer_id, joinId.member_id, date);
-            // remove his message and probably confirmation message
-            const messagesToDelete = [conversation_message_id];
-            if (join.needs_confirm) {
-                messagesToDelete.push(join.confirm_id);
-            }
-            messagesToDelete.forEach(c_m_id =>
-                deleteMessage({conversation_message_id: c_m_id, peer_id}).then(() => {
-                    console.log("deleteFinish", joinId.peer_id, joinId.member_id, date);
-                }).catch(err => {
-                    console.error("deleteError", joinId.peer_id, joinId.member_id, date, err?.error_code);
-                })
-            );
+            kickMemberAndDeleteMessage(join, conversation_message_id);
         }
     }
     return res.send("ok");

@@ -1,6 +1,7 @@
 import {MessagesKeyboard, MessagesSendParams, MessagesSendResponse} from "@vkontakte/api-schema-typescript";
 import callVKAPI from "./vkApi";
 import __ from "../l18n";
+import {KICK_UNCONFIRMED_THRESHOLD_SECONDS} from "../config";
 
 export type SendMessageParams = {
     peer_id: number,
@@ -41,7 +42,7 @@ export async function sendConfirmationMessage(
             peer_id,
             {
                 member_id: member_id > 0 ? `id${member_id}` : `club${-member_id}`,
-                kick_delay: "5 minutes"
+                kick_delay: KICK_UNCONFIRMED_THRESHOLD_SECONDS / 60
             }
         ), keyboard: {
             buttons: [
