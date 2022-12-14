@@ -13,7 +13,7 @@ export const VK_GROUP_CONFIRMATION = process.env.SPAM_CHKA_CONFIRMATION || "";
 
 // group token
 export const VK_GROUP_TOKEN = process.env.SPAM_CHKA_TOKEN || "";
-
+export const VK_SERVICE_TOKEN = process.env.SPAM_CHKA_SERVICE_TOKEN || "";
 // VK API version
 export const VK_API_VERSION = "5.131";
 

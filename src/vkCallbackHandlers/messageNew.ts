@@ -6,6 +6,7 @@ import deleteMessage from "../vkApi/deleteMessage";
 import {KICK_THRESHOLD_SECONDS, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
 import {insertJoin, JoinId, selectJoin} from "../db";
 import {sendConfirmationMessage} from "../vkApi/sendMessage";
+import getUser from "../vkApi/getUser";
 
 type MessageNewBody = VKRequestBody & {
     object: {
@@ -18,6 +19,13 @@ function isSpamMessage(text: string): boolean {
         const url = new URL(text);
     } catch (e) {
         return false;
+    }
+    return true;
+}
+
+function isSpamMember(user_id: number): boolean {
+    if (user_id > 0) {
+        // TODO: use in check: getUser({user_id}).then(console.log);
     }
     return true;
 }
@@ -44,10 +52,10 @@ export default function messageNew(req: Request, res: Response) {
         }
         console.log("join", joinId.peer_id, joinId.member_id, date);
         insertJoin({...joinId, ts: date});
-        if (1) {
+        if (isSpamMember(joinId.member_id)) {
             sendConfirmationMessage(joinId).then(() => {
                 console.log("sendConfirm", joinId.peer_id, joinId.member_id, date);
-            });
+            }).catch(console.error);
         } else {
             if (date - selectJoin(joinId) < KICK_THRESHOLD_SECONDS && isSpamMessage(text)) {
                 console.log("kickStart", joinId.peer_id, joinId.member_id, date);
