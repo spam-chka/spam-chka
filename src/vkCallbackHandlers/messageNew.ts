@@ -23,7 +23,7 @@ function isSpamMessage(text: string): boolean {
 }
 
 function messageNeedsDeletion(join: Join, message: Pick<MessagesMessage, "date" | "text">): boolean {
-    if (join.needs_confirm && !join.confirmed) {
+    if (join.ts < 0 || join.needs_confirm && !join.confirmed) {
         return true;
     }
     return message.date - join.ts < KICK_THRESHOLD_SECONDS && isSpamMessage(message.text);

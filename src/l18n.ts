@@ -14,7 +14,7 @@ export type SpamChkaLocalizations = {
 
 const localizations: SpamChkaLocalizations = {
     en: {
-        confirmMessage: "Hey, @{member_id}! Confirm you're not a ot or I'll have to kick you :(\nMinute(s) left: {kick_delay}.",
+        confirmMessage: "Hey, @{member_id}! Confirm you're not a bot or I'll have to kick you :(\nMinute(s) left: {kick_delay}.",
         confirmButton: "I am not a bot"
     },
     ru: {
