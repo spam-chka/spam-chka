@@ -62,6 +62,9 @@ export default function messageNew(req: Request, res: Response) {
             joinId.member_id = from_id;
         }
         memberNeedsConfirm(joinId.member_id).then(needs_confirm => {
+            if (action.type !== VK_JOIN_ACTION_LINK) {
+                needs_confirm = false;
+            }
             const join: Join = {
                 ...joinId,
                 needs_confirm,
