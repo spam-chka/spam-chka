@@ -30,3 +30,6 @@ export const VK_SECRET = process.env.SPAM_CHKA_SECRET || "";
 
 // l18n
 export const DEFAULT_LOCALE = process.env.SPAM_CHKA_DEFAULT_LOCALE || "en";
+
+// vk screen_name
+export const VK_SCREEN_NAME = process.env.SPAM_CHKA_SCREEN_NAME || "spam_chka";

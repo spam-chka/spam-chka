@@ -29,3 +29,6 @@ export default function __(key: keyof SpamChkaLocalization, peer_id: number, rep
     return format(localization[key], repl || {});
 }
 
+export function isLocale(candidate: string): candidate is SpamChkaLocale {
+    return Object.keys(localizations).includes(candidate);
+}

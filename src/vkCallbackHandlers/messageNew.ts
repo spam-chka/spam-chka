@@ -5,7 +5,7 @@ import {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
 import {KICK_THRESHOLD_SECONDS, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
 import {insertJoin, Join, JoinId, selectJoin, updateJoin} from "../db";
 import {sendConfirmationMessage} from "../vkApi/sendMessage";
-import getUser from "../vkApi/getUser";
+import {executeCommand, messageGetCommand} from "../commands";
 
 type MessageNewBody = VKRequestBody & {
     object: {
@@ -86,6 +86,13 @@ export default function messageNew(req: Request, res: Response) {
         const join = selectJoin(joinId);
         if (messageNeedsDeletion(join, {date, text})) {
             kickMemberAndDeleteMessage(join, conversation_message_id);
+        } else {
+            const {command, args} = messageGetCommand({text});
+            if (command) {
+                executeCommand({command, args, peer_id, from_id}).then(() => {
+                    console.log("executeCommand", command, peer_id, from_id);
+                });
+            }
         }
     }
     return res.send("ok");
