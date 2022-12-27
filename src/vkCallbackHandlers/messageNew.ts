@@ -6,6 +6,7 @@ import {KICK_THRESHOLD_SECONDS, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from
 import {insertJoin, Join, JoinId, selectJoin, updateJoin} from "../db";
 import {sendConfirmationMessage} from "../vkApi/sendMessage";
 import {executeCommand, messageGetCommand} from "../commands";
+import {Event} from "../mongo";
 
 type MessageNewBody = VKRequestBody & {
     object: {
@@ -22,11 +23,11 @@ function isSpamMessage(text: string): boolean {
     return true;
 }
 
-function messageNeedsDeletion(join: Join, message: Pick<MessagesMessage, "date" | "text">): boolean {
-    if (join.needs_confirm && !join.confirmed) {
+function messageNeedsDeletion(event: Event, message: Pick<MessagesMessage, "date" | "text">): boolean {
+    if (event.type === Event.EVENT_AWAIT_CONFIRM) {
         return true;
     }
-    return message.date - join.ts < KICK_THRESHOLD_SECONDS && isSpamMessage(message.text);
+    return message.date - event.created_at < KICK_THRESHOLD_SECONDS && isSpamMessage(message.text);
 
 }
 
@@ -41,7 +42,7 @@ async function memberNeedsConfirm(member_id: number): Promise<boolean> {
     return true;
 }
 
-export default function messageNew(req: Request, res: Response) {
+export default async function messageNew(req: Request, res: Response) {
     const {
         object: {
             message: {
@@ -50,42 +51,38 @@ export default function messageNew(req: Request, res: Response) {
         }
     }: MessageNewBody = req.body;
 
-    const joinId: JoinId = {
-        peer_id,
-        member_id: from_id
-    };
+    let member_id = from_id;
 
     if (action && action.type && [VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK].includes(action?.type)) {
         if (action.type === VK_JOIN_ACTION_INVITE) {
-            joinId.member_id = action.member_id;
-        } else {
-            joinId.member_id = from_id;
+            member_id = action.member_id;
         }
-        memberNeedsConfirm(joinId.member_id).then(needs_confirm => {
+        memberNeedsConfirm(member_id).then(async needs_confirm => {
             if (action.type !== VK_JOIN_ACTION_LINK) {
                 needs_confirm = false;
             }
-            const join: Join = {
-                ...joinId,
-                needs_confirm,
-                confirmed: false,
-                ts: date
-            };
-            console.log("join", join);
-            insertJoin(join);
-            if (join.needs_confirm) {
-                sendConfirmationMessage(joinId).then(confirm_id => {
-                    console.log("sendConfirm", joinId.peer_id, joinId.member_id, date);
-                    join.confirm_id = confirm_id;
-                    updateJoin(join);
-                    console.log(join);
+            await Event.create({
+                type: Event.EVENT_JOIN,
+                member_id: member_id,
+                peer_id: peer_id,
+            });
+            if (needs_confirm) {
+                sendConfirmationMessage({peer_id, member_id}).then(async confirm_id => {
+                    await Event.create({
+                        type: Event.EVENT_AWAIT_CONFIRM,
+                        member_id: member_id,
+                        peer_id: peer_id,
+                        meta: {confirm_id}
+                    });
                 }).catch(console.error);
             }
         });
     } else {
-        const join = selectJoin(joinId);
-        if (messageNeedsDeletion(join, {date, text})) {
-            kickMemberAndDeleteMessage(join, conversation_message_id);
+        // TODO: fix
+        const event = await Event.findLatest({peer_id, member_id});
+        join = selectJoin(joinId);
+        if (messageNeedsDeletion(event, {date, text})) {
+            kickMemberAndDeleteMessage({peer_id, member_id}, conversation_message_id);
         } else {
             const {command, args} = messageGetCommand({text});
             if (command) {
