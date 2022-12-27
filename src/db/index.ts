@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 import cachegoose from "recachegoose";
 import {createClient} from "redis";
+import {MONGODB_CONN, REDIS_CONN} from "../config";
 
 cachegoose(mongoose, {
     engine: "redis",
-    client: createClient("redis://localhost:6379")
+    client: createClient(REDIS_CONN)
 });
-mongoose.connect('mongodb://127.0.0.1:27017/events');
+mongoose.connect(MONGODB_CONN);
 
 export * from "./models";
 
