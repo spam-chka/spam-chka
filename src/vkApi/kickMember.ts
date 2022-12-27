@@ -1,6 +1,5 @@
 import {MessagesRemoveChatUserParams, MessagesRemoveChatUserResponse} from "@vkontakte/api-schema-typescript";
 import callVKAPI from "./vkApi";
-import {Join, updateJoin} from "../db";
 import deleteMessage from "./deleteMessage";
 import {Event} from "../mongo";
 import {getTimestamp} from "../timestamps";
