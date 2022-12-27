@@ -1,5 +1,7 @@
 import {getLocale} from "./db";
 import format from "./formatString";
+import {Config} from "./mongo";
+import {DEFAULT_LOCALE} from "./config";
 
 export type SpamChkaLocale = "en" | "ru";
 
@@ -32,8 +34,11 @@ const localizations: SpamChkaLocalizations = {
     }
 }
 
-export default function __(key: keyof SpamChkaLocalization, peer_id: number, repl: object = {}) {
-    const locale = getLocale({peer_id});
+export default async function __(key: keyof SpamChkaLocalization, peer_id: number, repl: object = {}) {
+    let {value: locale} = await Config.findOne({peer_id, name: "locale"});
+    if (!locale) {
+        locale = DEFAULT_LOCALE;
+    }
     const localization = localizations[locale];
     return format(localization[key], repl || {});
 }

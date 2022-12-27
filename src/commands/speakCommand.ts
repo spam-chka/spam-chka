@@ -5,18 +5,29 @@ import {Config} from "../mongo";
 
 registerCommand({
     command: "speak",
-    checker(_) {
-        return Promise.resolve();
+    checker(context) {
+        return new Promise((res, rej) => {
+            Config.findOne({peer_id: context.peer_id, name: "admin"}).then(config => {
+                if (config && config.value.includes(context.from_id)) {
+                    res();
+                } else {
+                    rej();
+                }
+            });
+        });
     },
-    executor(commandContext) {
+    async executor(commandContext) {
         const {args: [locale], peer_id} = commandContext;
         if (isLocale(locale)) {
-            return Config.findOneAndUpdate({peer_id, name: "locale"}, {value: locale}, {upsert: true}).then(() => {
-                return sendMessage({peer_id, text: __("setLocaleSuccess", peer_id)});
-            }).catch(() => {
-                return sendMessage({peer_id, text: __("setLocaleError", peer_id)});
+            return Config.findOneAndUpdate({
+                peer_id,
+                name: "locale"
+            }, {value: locale}, {upsert: true}).then(async () => {
+                return sendMessage({peer_id, text: await __("setLocaleSuccess", peer_id)});
+            }).catch(async () => {
+                return sendMessage({peer_id, text: await __("setLocaleError", peer_id)});
             });
         }
-        return sendMessage({peer_id, text: __("unsupportedLocale", peer_id, {locale})});
+        return sendMessage({peer_id, text: await __("unsupportedLocale", peer_id, {locale})});
     }
 });

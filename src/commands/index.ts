@@ -3,6 +3,7 @@ import {VK_SCREEN_NAME} from "../config";
 import {Command, CommandContext} from "./types";
 import {selectCommand} from "./registry";
 import {Event} from "../mongo";
+import {getTimestamp} from "../timestamps";
 
 function splitToArgs(s: string): string[] {
     const parts = s.split(" ");
@@ -72,4 +73,3 @@ export function executeCommand(commandContext: CommandContext): Promise<object> 
 
 // Load our commands
 import "./speakCommand";
-import {getTimestamp} from "../timestamps";
