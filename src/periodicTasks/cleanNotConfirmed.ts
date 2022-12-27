@@ -1,9 +1,16 @@
-import {selectUnconfimedJoins} from "../db";
 import {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
+import {Event} from "../mongo";
+import {getTimestamp} from "../timestamps";
+import {KICK_UNCONFIRMED_THRESHOLD_SECONDS} from "../config";
 
 export default function cleanNotConfirmed() {
-    const joins = selectUnconfimedJoins();
-    joins.forEach((join) => {
-        kickMemberAndDeleteMessage(join, join.confirm_id);
+    Event.find({
+        type: Event.EVENT_AWAIT_CONFIRM, ts: {
+            $gte: getTimestamp() - KICK_UNCONFIRMED_THRESHOLD_SECONDS
+        }
+    }).then(events => {
+        events.forEach(event => {
+            kickMemberAndDeleteMessage(event as Event, event.meta.confirm_id);
+        });
     });
 }

@@ -2,6 +2,8 @@ import {MessagesRemoveChatUserParams, MessagesRemoveChatUserResponse} from "@vko
 import callVKAPI from "./vkApi";
 import {Join, updateJoin} from "../db";
 import deleteMessage from "./deleteMessage";
+import {Event} from "../mongo";
+import {getTimestamp} from "../timestamps";
 
 export type KickUserParams = {
     member_id: number,
@@ -15,27 +17,27 @@ export default function kickMember({member_id, peer_id}: KickUserParams) {
         });
 }
 
-export function kickMemberAndDeleteMessage(join: Join, conversation_message_id: number): void {
-    console.log("kickStart", join.peer_id, join.member_id);
+export function kickMemberAndDeleteMessage(event: Event, conversation_message_id: number): void {
     // kick user
-    kickMember(join).then(() => {
-        // hack: confirm to prevent multiple kicks
-        updateJoin({...join, confirmed: true});
-        console.log("kickFinish", join.peer_id, join.member_id);
+    kickMember(event).then(async () => {
+        await Event.create({
+            peer_id: event.peer_id,
+            member_id: event.member_id,
+            type: Event.EVENT_KICK,
+            ts: getTimestamp()
+        });
     }).catch(err => {
-        console.error("kickError", join.peer_id, join.member_id, err?.error_code);
+        console.error("kickError", event.peer_id, event.member_id, err?.error_code);
     });
-    console.log("deleteStart", join.peer_id, join.member_id);
     // remove his message and probably confirmation message
     const messagesToDelete = [conversation_message_id];
-    if (join.needs_confirm && conversation_message_id !== join.confirm_id) {
-        messagesToDelete.push(join.confirm_id);
+    if (event.type === "await_confirm" && event.meta.confirm_id !== conversation_message_id) {
+        messagesToDelete.push(event.meta.confirm_id);
     }
     messagesToDelete.forEach(c_m_id =>
-        deleteMessage({conversation_message_id: c_m_id, peer_id: join.peer_id}).then(() => {
-            console.log("deleteFinish", join.peer_id, join.member_id);
-        }).catch(err => {
-            console.error("deleteError", join.peer_id, join.member_id, err?.error_code);
-        })
+        deleteMessage({conversation_message_id: c_m_id, peer_id: event.peer_id})
+            .catch(err => {
+                console.error("deleteError", event.peer_id, event.member_id, err?.error_code);
+            })
     );
 }

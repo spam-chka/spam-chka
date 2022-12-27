@@ -1,7 +1,8 @@
 import {Request, Response} from "express";
 import {VKRequestBody} from "./vkRequestTypes";
 import deleteMessage from "../vkApi/deleteMessage";
-import {selectJoin, updateJoin} from "../db";
+import {Event} from "../mongo";
+import {getTimestamp} from "../timestamps";
 
 type MessageEventPayload = {
     type: "confirm"
@@ -19,20 +20,34 @@ type MessageEventBody = VKRequestBody & {
 export default function messageEvent(req: Request, res: Response) {
     const {
         object: {
-            user_id, peer_id, conversation_message_id, payload
+            user_id: member_id, peer_id, conversation_message_id, payload
         }
     }: MessageEventBody = req.body;
     if (payload.type !== "confirm") {
         return res.send("ok");
     }
-    const join = selectJoin({peer_id, member_id: user_id});
-    if (join.needs_confirm && !join.confirmed && conversation_message_id === join.confirm_id) {
-        console.log("confirmJoin", peer_id, user_id);
-        updateJoin({peer_id, member_id: user_id, confirmed: true});
-        deleteMessage({conversation_message_id, peer_id}).then(() => {
+    Event.findOne({
+        peer_id,
+        member_id,
+        type: Event.EVENT_AWAIT_CONFIRM,
+        meta: {confirm_id: conversation_message_id}
+    }).then(async event => {
+        if (!event) {
+            return Promise.reject({});
+        }
+        await Event.create({
+            type: Event.EVENT_CONFIRM,
+            member_id,
+            peer_id: peer_id,
+            ts: getTimestamp()
+        });
+        deleteMessage({conversation_message_id, peer_id})
+            .catch(() => {
+                console.log("deleteMessage failed", conversation_message_id);
+            }).finally(() => {
             res.send("ok");
         });
-    } else {
+    }).catch(() => {
         res.send("ok");
-    }
+    });
 }

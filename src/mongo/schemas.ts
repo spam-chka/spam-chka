@@ -10,23 +10,60 @@ const EVENT_COMMAND = "command";
 const eventTypes = [EVENT_JOIN, EVENT_AWAIT_CONFIRM, EVENT_CONFIRM, EVENT_KICK, EVENT_COMMAND];
 export type EventType = typeof eventTypes[number];
 
-export interface TEvent {
-    type: EventType,
+export type EventContext = {
     peer_id: number,
     member_id: number,
-    meta: Command | null
-}
+    ts: number
+};
+
+export type EventJoin = EventContext & {
+    type: typeof EVENT_JOIN,
+    meta: null
+};
+
+export type EventAwaitConfirm = EventContext & {
+    type: typeof EVENT_AWAIT_CONFIRM,
+    meta: { confirm_id: number },
+};
+
+export type EventConfirm = EventContext & {
+    type: typeof EVENT_CONFIRM,
+    meta: null,
+};
+
+export type EventKick = EventContext & {
+    type: typeof EVENT_KICK,
+    meta: null,
+};
+
+export type EventCommand = EventContext & {
+    type: typeof EVENT_COMMAND,
+    meta: Command
+};
+
+export type TEvent = EventJoin | EventAwaitConfirm | EventConfirm | EventKick | EventCommand;
 
 export const eventSchema = new Schema(
     {
         type: {
             type: Schema.Types.String,
             enum: eventTypes,
-            default: EVENT_JOIN
+            default: EVENT_JOIN,
+            required: true
         },
-        peer_id: Schema.Types.Number,
-        member_id: Schema.Types.Number,
+        peer_id: {
+            type: Schema.Types.Number,
+            required: true
+        },
+        member_id: {
+            type: Schema.Types.Number,
+            required: true
+        },
         meta: Schema.Types.Mixed,
+        ts: {
+            type: Schema.Types.Number,
+            required: true
+        },
     }, {
         statics: {
             EVENT_JOIN,
@@ -34,8 +71,16 @@ export const eventSchema = new Schema(
             EVENT_CONFIRM,
             EVENT_KICK,
             EVENT_COMMAND,
-            findLatest({peer_id, member_id}: { peer_id: number, member_id: number }) {
-                return this.find({member_id, peer_id}).sort({created_at: -1}).limit(1);
+            async findLatest({
+                                 peer_id,
+                                 member_id
+                             }: { peer_id: number, member_id: number }): Promise<TEvent | null> {
+                const latest = await this.find({member_id, peer_id}).sort({created_at: -1}).limit(1);
+                if (latest) {
+                    // @ts-ignore
+                    return latest[0];
+                }
+                return null;
             }
         },
         timestamps: {
@@ -57,8 +102,10 @@ export type TAdminConfig = {
     value: number[]
 }
 
-export interface TConfigBase {
+export type TConfigBase = {
     peer_id: number,
+    created_at: number,
+    updated_at: number
 }
 
 export type TConfig = TConfigBase & (TAdminConfig | TLocaleConfig);

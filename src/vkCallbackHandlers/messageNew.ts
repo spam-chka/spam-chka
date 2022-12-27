@@ -3,10 +3,10 @@ import {MessagesMessage} from "@vkontakte/api-schema-typescript";
 import {VKRequestBody} from "./vkRequestTypes";
 import {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
 import {KICK_THRESHOLD_SECONDS, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
-import {insertJoin, Join, JoinId, selectJoin, updateJoin} from "../db";
 import {sendConfirmationMessage} from "../vkApi/sendMessage";
 import {executeCommand, messageGetCommand} from "../commands";
 import {Event} from "../mongo";
+import {getTimestamp} from "../timestamps";
 
 type MessageNewBody = VKRequestBody & {
     object: {
@@ -27,7 +27,7 @@ function messageNeedsDeletion(event: Event, message: Pick<MessagesMessage, "date
     if (event.type === Event.EVENT_AWAIT_CONFIRM) {
         return true;
     }
-    return message.date - event.created_at < KICK_THRESHOLD_SECONDS && isSpamMessage(message.text);
+    return message.date - event.ts < KICK_THRESHOLD_SECONDS && isSpamMessage(message.text);
 
 }
 
@@ -42,7 +42,7 @@ async function memberNeedsConfirm(member_id: number): Promise<boolean> {
     return true;
 }
 
-export default async function messageNew(req: Request, res: Response) {
+export default function messageNew(req: Request, res: Response) {
     const {
         object: {
             message: {
@@ -57,40 +57,49 @@ export default async function messageNew(req: Request, res: Response) {
         if (action.type === VK_JOIN_ACTION_INVITE) {
             member_id = action.member_id;
         }
-        memberNeedsConfirm(member_id).then(async needs_confirm => {
-            if (action.type !== VK_JOIN_ACTION_LINK) {
-                needs_confirm = false;
-            }
-            await Event.create({
-                type: Event.EVENT_JOIN,
-                member_id: member_id,
-                peer_id: peer_id,
-            });
-            if (needs_confirm) {
-                sendConfirmationMessage({peer_id, member_id}).then(async confirm_id => {
+        Event.create({
+            type: Event.EVENT_JOIN,
+            member_id: member_id,
+            peer_id: peer_id,
+            ts: date
+        }).then(() => {
+            memberNeedsConfirm(member_id).then(async needs_confirm => {
+                if (action.type !== VK_JOIN_ACTION_LINK) {
+                    needs_confirm = false;
+                }
+                if (needs_confirm) {
+                    sendConfirmationMessage({peer_id, member_id}).then(async confirm_id => {
+                        await Event.create({
+                            type: Event.EVENT_AWAIT_CONFIRM,
+                            member_id: member_id,
+                            peer_id: peer_id,
+                            meta: {confirm_id},
+                            ts: getTimestamp()
+                        });
+                    }).catch(console.error);
+                } else {
                     await Event.create({
-                        type: Event.EVENT_AWAIT_CONFIRM,
+                        type: Event.EVENT_CONFIRM,
                         member_id: member_id,
                         peer_id: peer_id,
-                        meta: {confirm_id}
-                    });
-                }).catch(console.error);
-            }
+                        ts: getTimestamp()
+                    })
+                }
+            });
         });
     } else {
-        // TODO: fix
-        const event = await Event.findLatest({peer_id, member_id});
-        join = selectJoin(joinId);
-        if (messageNeedsDeletion(event, {date, text})) {
-            kickMemberAndDeleteMessage({peer_id, member_id}, conversation_message_id);
-        } else {
-            const {command, args} = messageGetCommand({text});
-            if (command) {
-                executeCommand({command, args, peer_id, from_id}).then(() => {
-                    console.log("executeCommand", command, peer_id, from_id);
-                });
+        Event.findLatest({peer_id, member_id}).then(event => {
+            if (event && messageNeedsDeletion(event, {date, text})) {
+                kickMemberAndDeleteMessage(event, conversation_message_id);
+            } else {
+                const {command, args} = messageGetCommand({text});
+                if (command) {
+                    executeCommand({command, args, peer_id, from_id}).then(() => {
+                        console.log("executeCommand", command, peer_id, from_id);
+                    });
+                }
             }
-        }
+        });
     }
     return res.send("ok");
 }

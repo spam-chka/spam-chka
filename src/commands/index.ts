@@ -1,9 +1,8 @@
 import {MessagesMessage} from "@vkontakte/api-schema-typescript";
 import {VK_SCREEN_NAME} from "../config";
-import sendMessage from "../vkApi/sendMessage";
 import {Command, CommandContext} from "./types";
 import {selectCommand} from "./registry";
-import * as Process from "process";
+import {Event} from "../mongo";
 
 function splitToArgs(s: string): string[] {
     const parts = s.split(" ");
@@ -54,7 +53,13 @@ export function executeCommand(commandContext: CommandContext): Promise<object> 
             return rej({error: {error_text: "cannot execute this command."}});
         }
         const {checker, executor} = entry;
-        checker(commandContext).then(() => {
+        checker(commandContext).then(async () => {
+            await Event.create({
+                type: Event.EVENT_COMMAND,
+                peer_id: commandContext.peer_id,
+                member_id: commandContext.from_id,
+                meta: {command: commandContext.command, args: commandContext.args}
+            });
             executor(commandContext).then(res).catch(rej);
         }).catch(() => {
             rej({error: {error_text: "cannot execute this command."}});

@@ -10,6 +10,7 @@ app.post("/", vkCallbackHandler);
 
 app.listen(PORT, () => {
     console.log(`Server is running, port = ${PORT}`);
+    cleanNotConfirmed();
     setInterval(() => {
         cleanNotConfirmed();
     }, KICK_UNCONFIRMED_THRESHOLD_SECONDS * 1000);
