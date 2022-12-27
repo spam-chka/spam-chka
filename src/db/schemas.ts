@@ -75,7 +75,8 @@ export const eventSchema = new Schema(
                                  peer_id,
                                  member_id
                              }: { peer_id: number, member_id: number }): Promise<TEvent | null> {
-                const latest = await this.find({member_id, peer_id}).sort({created_at: -1}).limit(1);
+                // @ts-ignore
+                const latest = await this.find({member_id, peer_id}).sort({created_at: -1}).limit(1).cache(1);
                 if (latest) {
                     // @ts-ignore
                     return latest[0];
