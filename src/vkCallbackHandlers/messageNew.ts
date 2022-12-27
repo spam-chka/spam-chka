@@ -5,7 +5,7 @@ import {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
 import {KICK_THRESHOLD_SECONDS, VK_GROUP_ID, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
 import {sendConfirmationMessage} from "../vkApi/sendMessage";
 import {executeCommand, messageGetCommand} from "../commands";
-import {Config, Event} from "../mongo";
+import {Config, Event} from "../db";
 import {getTimestamp} from "../timestamps";
 
 type MessageNewBody = VKRequestBody & {

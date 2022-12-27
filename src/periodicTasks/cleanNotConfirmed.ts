@@ -1,5 +1,5 @@
 import {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
-import {Event} from "../mongo";
+import {Event} from "../db";
 import {getTimestamp} from "../timestamps";
 import {KICK_UNCONFIRMED_THRESHOLD_SECONDS} from "../config";
 

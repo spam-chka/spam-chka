@@ -1,24 +1,6 @@
-import {SpamChkaLocale} from "../l18n";
-import {DEFAULT_LOCALE, KICK_UNCONFIRMED_THRESHOLD_SECONDS} from "../config";
+import mongoose from "mongoose";
 
-const db = {
-    joins: {},
-    locales: {},
-    confirmations: {}
-};
+export * from "./models";
 
-export type GetLocaleParams = {
-    peer_id: number
-};
+mongoose.connect('mongodb://127.0.0.1:27017/events');
 
-export type SetLocaleParams = GetLocaleParams & {
-    locale: SpamChkaLocale
-}
-
-export function setLocale({peer_id, locale}: SetLocaleParams) {
-    db.locales[peer_id] = locale;
-}
-
-export function getLocale({peer_id}: GetLocaleParams): string {
-    return db.locales[peer_id] || DEFAULT_LOCALE;
-}

@@ -2,7 +2,7 @@ import {MessagesMessage} from "@vkontakte/api-schema-typescript";
 import {VK_SCREEN_NAME} from "../config";
 import {Command, CommandContext} from "./types";
 import {selectCommand} from "./registry";
-import {Event} from "../mongo";
+import {Event} from "../db";
 import {getTimestamp} from "../timestamps";
 
 function splitToArgs(s: string): string[] {

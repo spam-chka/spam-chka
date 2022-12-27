@@ -1,6 +1,5 @@
-import {getLocale} from "./db";
 import format from "./formatString";
-import {Config} from "./mongo";
+import {Config} from "./db";
 import {DEFAULT_LOCALE} from "./config";
 
 export type SpamChkaLocale = "en" | "ru";

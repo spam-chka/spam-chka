@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
 import {VKRequestBody} from "./vkRequestTypes";
 import deleteMessage from "../vkApi/deleteMessage";
-import {Event} from "../mongo";
+import {Event} from "../db";
 import {getTimestamp} from "../timestamps";
 
 type MessageEventPayload = {

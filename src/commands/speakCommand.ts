@@ -1,7 +1,7 @@
 import {registerCommand} from "./registry";
 import sendMessage from "../vkApi/sendMessage";
 import __, {isLocale} from "../l18n";
-import {Config} from "../mongo";
+import {Config} from "../db";
 
 registerCommand({
     command: "speak",
