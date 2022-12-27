@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
-import {eventSchema} from "./schemas";
+import {configSchema, eventSchema} from "./schemas";
 
-export const Event = mongoose.model('Event', eventSchema);
+export const Event = mongoose.model("Event", eventSchema);
+export const Config = mongoose.model("Config", configSchema);

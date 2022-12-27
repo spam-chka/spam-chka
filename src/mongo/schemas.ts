@@ -22,3 +22,14 @@ export const eventSchema = new Schema(
             updatedAt: 'updated_at'
         }
     });
+
+export const configSchema = new Schema({
+    peer_id: Schema.Types.Number,
+    name: Schema.Types.String,
+    value: Schema.Types.Mixed,
+}, {
+    timestamps: {
+        createdAt: "created_at",
+        updatedAt: "updated_at"
+    }
+});
