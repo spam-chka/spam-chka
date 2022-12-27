@@ -5,7 +5,10 @@ export type SpamChkaLocale = "en" | "ru";
 
 export type SpamChkaLocalization = {
     confirmMessage: string,
-    confirmButton: string
+    confirmButton: string,
+    setLocaleSuccess: string,
+    setLocaleError: string,
+    unsupportedLocale: string
 }
 
 export type SpamChkaLocalizations = {
@@ -15,15 +18,21 @@ export type SpamChkaLocalizations = {
 const localizations: SpamChkaLocalizations = {
     en: {
         confirmMessage: "Hey, @{member_id}! Confirm you're not a bot or I'll have to kick you :(\nMinute(s) left: {kick_delay}.",
-        confirmButton: "I am not a bot"
+        confirmButton: "I am not a bot",
+        setLocaleSuccess: "Language set successfully.",
+        setLocaleError: "Error while setting language.",
+        unsupportedLocale: "Language {locale} is not supported."
     },
     ru: {
         confirmMessage: "Добро пожаловать, @{member_id}! Подтвердите, что Вы не бот или мне придется исключить Вас :(\nОсталось минут: {kick_delay}.",
-        confirmButton: "Я не бот"
+        confirmButton: "Я не бот",
+        setLocaleSuccess: "Язык успешно установлен.",
+        setLocaleError: "Ошибка при установке языка.",
+        unsupportedLocale: "Язык {locale} не поддерживается."
     }
 }
 
-export default function __(key: keyof SpamChkaLocalization, peer_id: number, repl?: object) {
+export default function __(key: keyof SpamChkaLocalization, peer_id: number, repl: object = {}) {
     const locale = getLocale({peer_id});
     const localization = localizations[locale];
     return format(localization[key], repl || {});

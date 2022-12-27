@@ -58,7 +58,8 @@ export function executeCommand(commandContext: CommandContext): Promise<object> 
                 type: Event.EVENT_COMMAND,
                 peer_id: commandContext.peer_id,
                 member_id: commandContext.from_id,
-                meta: {command: commandContext.command, args: commandContext.args}
+                meta: {command: commandContext.command, args: commandContext.args},
+                ts: getTimestamp()
             });
             executor(commandContext).then(res).catch(rej);
         }).catch(() => {
@@ -71,3 +72,4 @@ export function executeCommand(commandContext: CommandContext): Promise<object> 
 
 // Load our commands
 import "./speakCommand";
+import {getTimestamp} from "../timestamps";

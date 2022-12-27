@@ -95,7 +95,7 @@ export default function messageNew(req: Request, res: Response) {
                 const {command, args} = messageGetCommand({text});
                 if (command) {
                     executeCommand({command, args, peer_id, from_id}).then(() => {
-                        console.log("executeCommand", command, peer_id, from_id);
+
                     });
                 }
             }

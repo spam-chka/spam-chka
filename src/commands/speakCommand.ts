@@ -1,7 +1,7 @@
 import {registerCommand} from "./registry";
 import sendMessage from "../vkApi/sendMessage";
-import {isLocale} from "../l18n";
-import {setLocale} from "../db";
+import __, {isLocale} from "../l18n";
+import {Config} from "../mongo";
 
 registerCommand({
     command: "speak",
@@ -9,11 +9,14 @@ registerCommand({
         return Promise.resolve();
     },
     executor(commandContext) {
-        const {args, peer_id} = commandContext;
-        if (isLocale(args[0])) {
-            setLocale({peer_id, locale: args[0]});
-            return sendMessage({peer_id, text: '✅'});
+        const {args: [locale], peer_id} = commandContext;
+        if (isLocale(locale)) {
+            return Config.findOneAndUpdate({peer_id, name: "locale"}, {value: locale}, {upsert: true}).then(() => {
+                return sendMessage({peer_id, text: __("setLocaleSuccess", peer_id)});
+            }).catch(() => {
+                return sendMessage({peer_id, text: __("setLocaleError", peer_id)});
+            });
         }
-        return sendMessage({peer_id, text: '❌'});
+        return sendMessage({peer_id, text: __("unsupportedLocale", peer_id, {locale})});
     }
 });
