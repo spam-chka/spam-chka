@@ -34,10 +34,7 @@ const localizations: SpamChkaLocalizations = {
 }
 
 export default async function __(key: keyof SpamChkaLocalization, peer_id: number, repl: object = {}) {
-    let {value: locale} = await Config.findOne({peer_id, name: "locale"});
-    if (!locale) {
-        locale = DEFAULT_LOCALE;
-    }
+    let {value: locale} = await Config.findOne({peer_id, name: "locale"}) || {value: DEFAULT_LOCALE};
     const localization = localizations[locale];
     return format(localization[key], repl || {});
 }

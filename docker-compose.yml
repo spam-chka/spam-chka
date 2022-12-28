@@ -1,6 +1,8 @@
+version: "3.5"
+
 services:
   app:
-    image: spam-chka
+    image: ghcr.io/kormanowsky/spam-chka
     ports:
       - "8080:3000"
     env_file:
