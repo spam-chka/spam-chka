@@ -4,12 +4,14 @@ import {getTimestamp} from "../timestamps";
 import {KICK_UNCONFIRMED_THRESHOLD_SECONDS} from "../config";
 
 export default function cleanNotConfirmed() {
+    const ts = getTimestamp();
     Event.aggregate([
         {
             $match: {
                 ts: {
-                    $gte: getTimestamp() - KICK_UNCONFIRMED_THRESHOLD_SECONDS
-                }
+                    $gte: ts - 2 * KICK_UNCONFIRMED_THRESHOLD_SECONDS,
+                    $lte: ts - KICK_UNCONFIRMED_THRESHOLD_SECONDS,
+                },
             }
         },
         {
