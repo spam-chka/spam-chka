@@ -24,13 +24,21 @@ export default function cleanNotConfirmed() {
                     $last: "$$CURRENT"
                 }
             }
+        },
+        {
+            $match: {
+                $expr: {
+                    $eq: [
+                        "$last_event.type",
+                        Event.EVENT_AWAIT_CONFIRM
+                    ]
+                }
+            }
         }
     ])
         .then(groups => {
             groups.forEach(({last_event}) => {
-                if(last_event.type === Event.EVENT_AWAIT_CONFIRM) {
-                    kickMemberAndDeleteMessage(last_event, last_event.meta.confirm_id);
-                }
+                kickMemberAndDeleteMessage(last_event, last_event.meta.confirm_id);
             });
         });
 }
