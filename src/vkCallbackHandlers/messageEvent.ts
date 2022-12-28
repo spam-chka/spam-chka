@@ -38,7 +38,7 @@ export default function messageEvent(req: Request, res: Response) {
         await Event.create({
             type: Event.EVENT_CONFIRM,
             member_id,
-            peer_id: peer_id,
+            peer_id,
             ts: getTimestamp()
         });
         deleteMessage({conversation_message_id, peer_id})

@@ -89,7 +89,7 @@ export default function messageNew(req: Request, res: Response) {
                             member_id: member_id,
                             peer_id: peer_id,
                             ts: getTimestamp()
-                        })
+                        });
                     }
                 });
             });
