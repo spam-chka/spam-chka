@@ -30,8 +30,11 @@ export function kickMemberAndDeleteMessage(event: Event, conversation_message_id
     });
     // remove his message and probably confirmation message
     const messagesToDelete = [conversation_message_id];
-    if (event.type === "await_confirm" && event.meta.confirm_id !== conversation_message_id) {
-        messagesToDelete.push(event.meta.confirm_id);
+    // TODO: use Discriminator from mongoose
+    // @ts-ignore
+    if (event.type === Event.EVENT_AWAIT_CONFIRM && event.meta?.confirm_id !== conversation_message_id) {
+        // @ts-ignore
+        messagesToDelete.push(event.meta?.confirm_id);
     }
     messagesToDelete.forEach(c_m_id =>
         deleteMessage({conversation_message_id: c_m_id, peer_id: event.peer_id})

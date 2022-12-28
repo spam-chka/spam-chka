@@ -23,12 +23,9 @@ function isSpamMessage(text: string): boolean {
     return true;
 }
 
-function messageNeedsDeletion(event: Event, message: Pick<MessagesMessage, "date" | "text">): boolean {
-    if (event.type === Event.EVENT_AWAIT_CONFIRM) {
-        return true;
-    }
-    return message.date - event.ts < KICK_THRESHOLD_SECONDS && isSpamMessage(message.text);
-
+function messageNeedsDeletion(event: Event | null, message: Pick<MessagesMessage, "date" | "text">): boolean {
+    // return message.date - event.ts < KICK_THRESHOLD_SECONDS && isSpamMessage(message.text);
+    return event && [Event.EVENT_AWAIT_CONFIRM, Event.EVENT_JOIN].includes(event.type);
 }
 
 async function memberNeedsConfirm(member_id: number): Promise<boolean> {
@@ -99,7 +96,7 @@ export default function messageNew(req: Request, res: Response) {
         }
     } else {
         Event.findLatest({peer_id, member_id}).then(event => {
-            if (event && messageNeedsDeletion(event, {date, text})) {
+            if (messageNeedsDeletion(event, {date, text})) {
                 kickMemberAndDeleteMessage(event, conversation_message_id);
             } else {
                 const {command, args} = messageGetCommand({text});
