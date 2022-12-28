@@ -9,7 +9,8 @@ export type SpamChkaLocalization = {
     confirmButton: string,
     setLocaleSuccess: string,
     setLocaleError: string,
-    unsupportedLocale: string
+    unsupportedLocale: string,
+    stats: string,
 }
 
 export type SpamChkaLocalizations = {
@@ -22,14 +23,22 @@ const localizations: SpamChkaLocalizations = {
         confirmButton: "I am not a bot",
         setLocaleSuccess: "Language set successfully.",
         setLocaleError: "Error while setting language.",
-        unsupportedLocale: "Language {locale} is not supported."
+        unsupportedLocale: "Language {locale} is not supported.",
+        stats: `Stats (since {start_ts}): 
+Chats (excluding dev ones): {chats}
+Bots kicked (this chat): {kicks_chat}
+Bots kicked (all the chats): {kicks_all}`
     },
     ru: {
         confirmMessage: "Добро пожаловать, @{member_id}! Подтвердите, что Вы не бот или мне придется исключить Вас :(\nОсталось минут: {kick_delay}.",
         confirmButton: "Я не бот",
         setLocaleSuccess: "Язык успешно установлен.",
         setLocaleError: "Ошибка при установке языка.",
-        unsupportedLocale: "Язык {locale} не поддерживается."
+        unsupportedLocale: "Язык {locale} не поддерживается.",
+        stats: `Статистика (начиная с {start_ts}):
+Чаты (кроме тестовых): {chats}
+Ботов исключено (этот чат): {kicks_chat}
+Ботов исключено (все чаты): {kicks_all}`
     }
 }
 

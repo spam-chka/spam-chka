@@ -73,3 +73,4 @@ export function executeCommand(commandContext: CommandContext): Promise<object> 
 
 // Load our commands
 import "./speakCommand";
+import "./statsCommand";

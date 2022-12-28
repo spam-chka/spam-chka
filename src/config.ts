@@ -37,3 +37,6 @@ export const VK_SCREEN_NAME = process.env.SPAM_CHKA_SCREEN_NAME || "spam_chka";
 // external connections
 export const MONGODB_CONN = process.env.SPAM_CHKA_MONGODB_CONN;
 export const REDIS_CONN = process.env.SPAM_CHKA_REDIS_CONN;
+
+// developers chats (for testing etc)
+export const DEV_CHATS = process.env.SPAM_CHKA_DEV_CHATS.split(",").map(parseInt);
