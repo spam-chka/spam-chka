@@ -1,0 +1,26 @@
+services:
+  app:
+    image: spam-chka
+    ports:
+      - "8080:3000"
+    env_file:
+      - .env
+    networks:
+      - main
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    networks:
+      - main
+
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - main
+
+networks:
+  main: { }
