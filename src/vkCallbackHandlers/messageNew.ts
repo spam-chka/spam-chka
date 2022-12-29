@@ -2,10 +2,11 @@ import {Request, Response} from "express";
 import {MessagesMessage} from "@vkontakte/api-schema-typescript";
 import {VKRequestBody} from "./vkRequestTypes";
 import {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
-import {KICK_THRESHOLD_SECONDS, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
-import {insertJoin, Join, JoinId, selectJoin, updateJoin} from "../db";
+import {KICK_THRESHOLD_SECONDS, VK_GROUP_ID, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
 import {sendConfirmationMessage} from "../vkApi/sendMessage";
-import getUser from "../vkApi/getUser";
+import {executeCommand, messageGetCommand} from "../commands";
+import {Config, Event} from "../db";
+import {getTimestamp} from "../timestamps";
 
 type MessageNewBody = VKRequestBody & {
     object: {
@@ -22,22 +23,19 @@ function isSpamMessage(text: string): boolean {
     return true;
 }
 
-function messageNeedsDeletion(join: Join, message: Pick<MessagesMessage, "date" | "text">): boolean {
-    if (join.needs_confirm && !join.confirmed) {
-        return true;
-    }
-    return message.date - join.ts < KICK_THRESHOLD_SECONDS && isSpamMessage(message.text);
-
+function messageNeedsDeletion(event: Event | null, message: Pick<MessagesMessage, "date" | "text">): boolean {
+    // return message.date - event.ts < KICK_THRESHOLD_SECONDS && isSpamMessage(message.text);
+    return event && [Event.EVENT_AWAIT_CONFIRM, Event.EVENT_JOIN].includes(event.type);
 }
 
 async function memberNeedsConfirm(member_id: number): Promise<boolean> {
-    if (member_id > 0) {
+    /*if (member_id > 0) {
         const user = await getUser({user_id: member_id});
         if (user.friends_count === 0 || user.deactivated) {
             return true;
         }
-        return !!(!user.has_photo && true /*(user.first_name + user.last_name).toLowerCase().match(/^[a-z\-]*$/)*/);
-    }
+        return !!(!user.has_photo && true /!*(user.first_name + user.last_name).toLowerCase().match(/^[a-z\-]*$/)*!/);
+    }*/
     return true;
 }
 
@@ -50,40 +48,65 @@ export default function messageNew(req: Request, res: Response) {
         }
     }: MessageNewBody = req.body;
 
-    const joinId: JoinId = {
-        peer_id,
-        member_id: from_id
-    };
+    let member_id = from_id;
 
     if (action && action.type && [VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK].includes(action?.type)) {
         if (action.type === VK_JOIN_ACTION_INVITE) {
-            joinId.member_id = action.member_id;
-        } else {
-            joinId.member_id = from_id;
+            member_id = action.member_id;
         }
-        memberNeedsConfirm(joinId.member_id).then(needs_confirm => {
-            const join: Join = {
-                ...joinId,
-                needs_confirm,
-                confirmed: false,
+        if (member_id === -VK_GROUP_ID) {
+            Config.create({
+                peer_id,
+                name: "admin",
+                value: [from_id]
+            }).catch(() => {
+                console.error("create admin error, peer_id=", peer_id);
+            });
+        } else {
+            Event.create({
+                type: Event.EVENT_JOIN,
+                member_id: member_id,
+                peer_id: peer_id,
                 ts: date
-            };
-            console.log("join", join);
-            insertJoin(join);
-            if (join.needs_confirm) {
-                sendConfirmationMessage(joinId).then(confirm_id => {
-                    console.log("sendConfirm", joinId.peer_id, joinId.member_id, date);
-                    join.confirm_id = confirm_id;
-                    updateJoin(join);
-                    console.log(join);
-                }).catch(console.error);
+            }).then(() => {
+                memberNeedsConfirm(member_id).then(async needs_confirm => {
+                    if (action.type !== VK_JOIN_ACTION_LINK) {
+                        needs_confirm = false;
+                    }
+                    if (needs_confirm) {
+                        sendConfirmationMessage({peer_id, member_id}).then(async confirm_id => {
+                            await Event.create({
+                                type: Event.EVENT_AWAIT_CONFIRM,
+                                member_id: member_id,
+                                peer_id: peer_id,
+                                meta: {confirm_id},
+                                ts: getTimestamp()
+                            });
+                        }).catch(console.error);
+                    } else {
+                        await Event.create({
+                            type: Event.EVENT_CONFIRM,
+                            member_id: member_id,
+                            peer_id: peer_id,
+                            ts: getTimestamp()
+                        });
+                    }
+                });
+            });
+        }
+    } else {
+        Event.findLatest({peer_id, member_id}).then(event => {
+            if (messageNeedsDeletion(event, {date, text})) {
+                kickMemberAndDeleteMessage(event, conversation_message_id);
+            } else {
+                const {command, args} = messageGetCommand({text});
+                if (command) {
+                    executeCommand({command, args, peer_id, from_id}).catch(err => {
+                        console.error("executeCommand", err)
+                    });
+                }
             }
         });
-    } else {
-        const join = selectJoin(joinId);
-        if (messageNeedsDeletion(join, {date, text})) {
-            kickMemberAndDeleteMessage(join, conversation_message_id);
-        }
     }
     return res.send("ok");
 }

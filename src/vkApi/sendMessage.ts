@@ -37,7 +37,7 @@ export async function sendConfirmationMessage(
         member_id
     }: SendConfirmationMessageParams): Promise<SendConfirmationMessageResponse> {
     const [response]: SendMessageResponse = await sendMessage({
-        peer_id, text: __(
+        peer_id, text: await __(
             "confirmMessage",
             peer_id,
             {
@@ -50,7 +50,7 @@ export async function sendConfirmationMessage(
                     {
                         action: {
                             type: "callback",
-                            label: __("confirmButton", peer_id, {}),
+                            label: await __("confirmButton", peer_id, {}),
                             payload: JSON.stringify({"type": "confirm"}),
                         },
                     }

@@ -25,5 +25,18 @@ export const VK_API_VERSION = "5.131";
 export const VK_JOIN_ACTION_INVITE = "chat_invite_user";
 export const VK_JOIN_ACTION_LINK = "chat_invite_user_by_link";
 
+// secret
+export const VK_SECRET = process.env.SPAM_CHKA_SECRET || "";
+
 // l18n
 export const DEFAULT_LOCALE = process.env.SPAM_CHKA_DEFAULT_LOCALE || "en";
+
+// vk screen_name
+export const VK_SCREEN_NAME = process.env.SPAM_CHKA_SCREEN_NAME || "spam_chka";
+
+// external connections
+export const MONGODB_CONN = process.env.SPAM_CHKA_MONGODB_CONN;
+export const REDIS_CONN = process.env.SPAM_CHKA_REDIS_CONN;
+
+// developers chats (for testing etc)
+export const DEV_CHATS = process.env.SPAM_CHKA_DEV_CHATS.split(",").map(parseInt);

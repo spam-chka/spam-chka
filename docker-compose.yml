@@ -1,0 +1,24 @@
+version: "3.5"
+
+services:
+  app:
+    image: ghcr.io/kormanowsky/spam-chka
+    ports:
+      - "8080:3000"
+    env_file:
+      - .env
+    networks:
+      - main
+
+  mongo:
+    image: mongo
+    networks:
+      - main
+
+  redis:
+    image: redis
+    networks:
+      - main
+
+networks:
+  main: { }
