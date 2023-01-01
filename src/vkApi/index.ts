@@ -1,12 +1,12 @@
-import kickMember, {kickMemberAndDeleteMessage} from "./kickMember";
-import deleteMessage from "./deleteMessage";
+import kickMember, {clearMember} from "./kickMember";
+import deleteMessages from "./deleteMessages";
 import getUser from "./getUser";
 import sendMessage, {sendConfirmationMessage} from "./sendMessage";
 
 export default {
     kickMember,
-    deleteMessage,
-    kickMemberAndDeleteMessage,
+    deleteMessages,
+    clearMember,
     getUser,
     sendMessage,
     sendConfirmationMessage

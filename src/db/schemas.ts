@@ -18,12 +18,12 @@ export type EventContext = {
 
 export type EventJoin = EventContext & {
     type: typeof EVENT_JOIN,
-    meta: null
+    meta: { conversation_message_id: number }
 };
 
 export type EventAwaitConfirm = EventContext & {
     type: typeof EVENT_AWAIT_CONFIRM,
-    meta: { confirm_id: number },
+    meta: { conversation_message_id: number },
 };
 
 export type EventConfirm = EventContext & {

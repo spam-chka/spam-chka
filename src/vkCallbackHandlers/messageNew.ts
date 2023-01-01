@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
 import {MessagesMessage} from "@vkontakte/api-schema-typescript";
 import {VKRequestBody} from "./vkRequestTypes";
-import {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
+import {clearMember} from "../vkApi/kickMember";
 import {KICK_THRESHOLD_SECONDS, VK_GROUP_ID, VK_JOIN_ACTION_INVITE, VK_JOIN_ACTION_LINK} from "../config";
 import {sendConfirmationMessage} from "../vkApi/sendMessage";
 import {executeCommand, messageGetCommand} from "../commands";
@@ -67,7 +67,8 @@ export default function messageNew(req: Request, res: Response) {
                 type: Event.EVENT_JOIN,
                 member_id: member_id,
                 peer_id: peer_id,
-                ts: date
+                ts: date,
+                meta: {conversation_message_id: conversation_message_id}
             }).then(() => {
                 memberNeedsConfirm(member_id).then(async needs_confirm => {
                     if (action.type !== VK_JOIN_ACTION_LINK) {
@@ -79,7 +80,7 @@ export default function messageNew(req: Request, res: Response) {
                                 type: Event.EVENT_AWAIT_CONFIRM,
                                 member_id: member_id,
                                 peer_id: peer_id,
-                                meta: {confirm_id},
+                                meta: {conversation_message_id: confirm_id},
                                 ts: getTimestamp()
                             });
                         }).catch(console.error);
@@ -97,7 +98,12 @@ export default function messageNew(req: Request, res: Response) {
     } else {
         Event.findLatest({peer_id, member_id}).then(event => {
             if (messageNeedsDeletion(event, {date, text})) {
-                kickMemberAndDeleteMessage(event, conversation_message_id);
+                clearMember({
+                    peer_id,
+                    member_id,
+                    last_message_id: conversation_message_id,
+                    confirm_message_id: null
+                });
             } else {
                 const {command, args} = messageGetCommand({text});
                 if (command) {

@@ -1,8 +1,13 @@
-import {MessagesRemoveChatUserParams, MessagesRemoveChatUserResponse} from "@vkontakte/api-schema-typescript";
+import {
+    MessagesRemoveChatUserParams,
+    MessagesRemoveChatUserResponse,
+    MessagesMessage
+} from "@vkontakte/api-schema-typescript";
 import callVKAPI from "./vkApi";
-import deleteMessage from "./deleteMessage";
+import deleteMessages from "./deleteMessages";
 import {Event} from "../db";
 import {getTimestamp} from "../timestamps";
+import getMessages from "./getMessages";
 
 export type KickUserParams = {
     member_id: number,
@@ -16,30 +21,64 @@ export default function kickMember({member_id, peer_id}: KickUserParams) {
         });
 }
 
-export function kickMemberAndDeleteMessage(event: Event, conversation_message_id: number): void {
+export type ClearMemberParams = {
+    member_id: number,
+    peer_id: number,
+    last_message_id: number,
+    confirm_message_id: number | null
+}
+
+export async function clearMember(
+    {
+        member_id,
+        peer_id,
+        last_message_id,
+        confirm_message_id = null,
+    }: ClearMemberParams
+): Promise<void> {
     // kick user
-    kickMember(event).then(async () => {
+    try {
+        await kickMember({member_id, peer_id});
         await Event.create({
-            peer_id: event.peer_id,
-            member_id: event.member_id,
+            peer_id,
+            member_id,
             type: Event.EVENT_KICK,
             ts: getTimestamp()
         });
-    }).catch(err => {
-        console.error("kickError", event.peer_id, event.member_id, err?.error_code);
-    });
-    // remove his message and probably confirmation message
-    const messagesToDelete = [conversation_message_id];
-    // TODO: use Discriminator from mongoose
-    // @ts-ignore
-    if (event.type === Event.EVENT_AWAIT_CONFIRM && event.meta?.confirm_id !== conversation_message_id) {
-        // @ts-ignore
-        messagesToDelete.push(event.meta?.confirm_id);
+    } catch (err) {
+        console.error("kickError", peer_id, member_id, err?.error_code);
     }
-    messagesToDelete.forEach(c_m_id =>
-        deleteMessage({conversation_message_id: c_m_id, peer_id: event.peer_id})
-            .catch(err => {
-                console.error("deleteError", event.peer_id, event.member_id, err?.error_code);
-            })
-    );
+    const delete_conversation_message_ids = [];
+    try {
+        const joinEvent = await Event.findOne({peer_id, member_id, type: Event.EVENT_JOIN});
+        if (joinEvent && joinEvent.meta?.join_id) {
+            const start_message_id = joinEvent.meta.join_id;
+            const {items} = await getMessages(
+                {peer_id, start_message_id, end_message_id: last_message_id}
+            );
+            items?.forEach((message: MessagesMessage) => {
+                if (message.from_id === member_id || message.conversation_message_id === confirm_message_id) {
+                    delete_conversation_message_ids.push(message.conversation_message_id);
+                }
+            });
+        }
+    } catch (err) {
+        console.error("formMessagesList", peer_id, member_id, err?.error_code);
+    }
+    if (delete_conversation_message_ids.length === 0) {
+        if (confirm_message_id) {
+            delete_conversation_message_ids.push(confirm_message_id);
+        }
+        if (confirm_message_id !== last_message_id) {
+            delete_conversation_message_ids.push(last_message_id);
+        }
+    }
+    try {
+        console.log(delete_conversation_message_ids, last_message_id, confirm_message_id);
+        await deleteMessages({
+            conversation_message_ids: delete_conversation_message_ids, peer_id
+        });
+    } catch (err) {
+        console.error("deleteError", peer_id, member_id, JSON.stringify(err));
+    }
 }

@@ -1,6 +1,6 @@
 import {Request, Response} from "express";
 import {VKRequestBody} from "./vkRequestTypes";
-import deleteMessage from "../vkApi/deleteMessage";
+import deleteMessages from "../vkApi/deleteMessages";
 import {Event} from "../db";
 import {getTimestamp} from "../timestamps";
 
@@ -30,7 +30,7 @@ export default function messageEvent(req: Request, res: Response) {
         peer_id,
         member_id,
         type: Event.EVENT_AWAIT_CONFIRM,
-        meta: {confirm_id: conversation_message_id}
+        meta: {conversation_message_id}
     }).then(async event => {
         if (!event) {
             return Promise.reject({});
@@ -41,7 +41,7 @@ export default function messageEvent(req: Request, res: Response) {
             peer_id,
             ts: getTimestamp()
         });
-        deleteMessage({conversation_message_id, peer_id})
+        deleteMessages({conversation_message_ids: [conversation_message_id], peer_id})
             .catch(() => {
                 console.log("deleteMessage failed", conversation_message_id);
             }).finally(() => {
