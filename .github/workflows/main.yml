@@ -19,5 +19,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - run: |
+          npm install
+          npm run build
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME:$IMAGE_TAG
