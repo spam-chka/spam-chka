@@ -1,6 +1,6 @@
 import {Request, Response} from "express";
 
-export type Handler = (req: Request, res: Response) => Response;
+export type VKRequestHandler = (req: Request, res: Response) => void;
 
 export type VKRequestType = "confirmation" | "message_new" | "message_event";
 

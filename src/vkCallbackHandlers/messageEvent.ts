@@ -1,8 +1,9 @@
 import {Request, Response} from "express";
-import {VKRequestBody} from "./vkRequestTypes";
+import {VKRequestBody} from "./types";
 import deleteMessages from "../vkApi/deleteMessages";
 import {Event} from "../db";
 import {getTimestamp} from "../timestamps";
+import wrapAsHandler from "./wrapAsHandler";
 
 type MessageEventPayload = {
     type: "confirm"
@@ -17,37 +18,31 @@ type MessageEventBody = VKRequestBody & {
     }
 }
 
-export default function messageEvent(req: Request, res: Response) {
+async function messageEvent(body) {
     const {
         object: {
             user_id: member_id, peer_id, conversation_message_id, payload
         }
-    }: MessageEventBody = req.body;
+    }: MessageEventBody = body;
     if (payload.type !== "confirm") {
-        return res.send("ok");
+        return;
     }
-    Event.findOne({
+    const event = await Event.findOne({
         peer_id,
         member_id,
         type: Event.EVENT_AWAIT_CONFIRM,
         meta: {conversation_message_id}
-    }).then(async event => {
-        if (!event) {
-            return Promise.reject({});
-        }
-        await Event.create({
-            type: Event.EVENT_CONFIRM,
-            member_id,
-            peer_id,
-            ts: getTimestamp()
-        });
-        deleteMessages({conversation_message_ids: [conversation_message_id], peer_id})
-            .catch(() => {
-                console.log("deleteMessage failed", conversation_message_id);
-            }).finally(() => {
-            res.send("ok");
-        });
-    }).catch(() => {
-        res.send("ok");
     });
+    if (!event) {
+        return;
+    }
+    await Event.create({
+        type: Event.EVENT_CONFIRM,
+        member_id,
+        peer_id,
+        ts: getTimestamp()
+    });
+    await deleteMessages({conversation_message_ids: [conversation_message_id], peer_id});
 }
+
+export default wrapAsHandler(messageEvent);
