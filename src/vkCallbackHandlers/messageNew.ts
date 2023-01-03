@@ -95,7 +95,7 @@ async function messageNew(body) {
             peer_id,
             member_id,
             last_message_id: conversation_message_id,
-            confirm_message_id: null
+            confirm_message_id: event?.meta?.conversation_message_id
         });
     } else {
         const {command, args} = messageGetCommand({text});
