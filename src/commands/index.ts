@@ -59,6 +59,7 @@ export function executeCommand(commandContext: CommandContext): Promise<object> 
                 type: Event.EVENT_COMMAND,
                 peer_id: commandContext.peer_id,
                 member_id: commandContext.from_id,
+                conversation_message_id: commandContext.conversation_message_id,
                 meta: {command: commandContext.command, args: commandContext.args},
                 ts: getTimestamp()
             });

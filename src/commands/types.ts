@@ -5,5 +5,6 @@ export type Command = {
 
 export type CommandContext = Command & {
     peer_id: number,
-    from_id: number
+    from_id: number,
+    conversation_message_id: number
 }

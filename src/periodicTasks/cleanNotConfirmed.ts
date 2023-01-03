@@ -44,8 +44,8 @@ export default function cleanNotConfirmed() {
             groups.forEach(({last_event}) => {
                 clearMember({
                     ...last_event,
-                    last_message_id: last_event.meta.conversation_message_id,
-                    confirm_message_id: last_event.meta.conversation_message_id
+                    last_message_id: last_event.conversation_message_id,
+                    confirm_message_id: last_event.conversation_message_id
                 });
             });
         });

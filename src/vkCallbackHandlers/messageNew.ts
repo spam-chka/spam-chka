@@ -66,8 +66,8 @@ async function messageNew(body) {
             type: Event.EVENT_JOIN,
             member_id: member_id,
             peer_id: peer_id,
+            conversation_message_id,
             ts: date,
-            meta: {conversation_message_id: conversation_message_id}
         });
         const needs_confirm = action.type === VK_JOIN_ACTION_LINK ? await memberNeedsConfirm(member_id) : false;
         if (needs_confirm) {
@@ -76,7 +76,7 @@ async function messageNew(body) {
                 type: Event.EVENT_AWAIT_CONFIRM,
                 member_id: member_id,
                 peer_id: peer_id,
-                meta: {conversation_message_id: confirm_id},
+                conversation_message_id: confirm_id,
                 ts: getTimestamp()
             });
         } else {
@@ -95,12 +95,12 @@ async function messageNew(body) {
             peer_id,
             member_id,
             last_message_id: conversation_message_id,
-            confirm_message_id: event?.meta?.conversation_message_id
+            confirm_message_id: event?.conversation_message_id
         });
     } else {
         const {command, args} = messageGetCommand({text});
         if (command) {
-            await executeCommand({command, args, peer_id, from_id});
+            await executeCommand({command, args, peer_id, from_id, conversation_message_id});
         }
     }
 }

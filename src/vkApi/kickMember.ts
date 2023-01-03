@@ -51,8 +51,8 @@ export async function clearMember(
     const delete_conversation_message_ids = [];
     try {
         const joinEvent = await Event.findOne({peer_id, member_id, type: Event.EVENT_JOIN});
-        if (joinEvent && joinEvent.meta?.conversation_message_id) {
-            const start_message_id = joinEvent.meta.conversation_message_id;
+        if (joinEvent && joinEvent.conversation_message_id) {
+            const start_message_id = joinEvent.conversation_message_id;
             const {items} = await getMessages(
                 {peer_id, start_message_id, end_message_id: last_message_id}
             );
@@ -74,7 +74,6 @@ export async function clearMember(
         }
     }
     try {
-        //console.log(delete_conversation_message_ids, last_message_id, confirm_message_id);
         await deleteMessages({
             conversation_message_ids: delete_conversation_message_ids, peer_id
         });

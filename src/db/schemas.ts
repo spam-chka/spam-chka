@@ -13,17 +13,18 @@ export type EventType = typeof eventTypes[number];
 export type EventContext = {
     peer_id: number,
     member_id: number,
-    ts: number
+    ts: number,
+    conversation_message_id: number | null
 };
 
 export type EventJoin = EventContext & {
     type: typeof EVENT_JOIN,
-    meta: { conversation_message_id: number }
+    meta: null
 };
 
 export type EventAwaitConfirm = EventContext & {
     type: typeof EVENT_AWAIT_CONFIRM,
-    meta: { conversation_message_id: number },
+    meta: null
 };
 
 export type EventConfirm = EventContext & {
@@ -59,11 +60,12 @@ export const eventSchema = new Schema(
             type: Schema.Types.Number,
             required: true
         },
-        meta: Schema.Types.Mixed,
         ts: {
             type: Schema.Types.Number,
             required: true
         },
+        conversation_message_id: Schema.Types.Number,
+        meta: Schema.Types.Mixed,
     }, {
         statics: {
             EVENT_JOIN,
