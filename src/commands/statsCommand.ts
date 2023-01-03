@@ -88,6 +88,7 @@ registerCommand({
             {
                 $match: {
                     peer_id: {
+                        $gt: 2000000000,
                         $nin: DEV_CHATS
                     }
                 }
