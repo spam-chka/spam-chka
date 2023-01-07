@@ -1,4 +1,4 @@
-import {kickMemberAndDeleteMessage} from "../vkApi/kickMember";
+import {clearMember} from "../vkApi/kickMember";
 import {Event} from "../db";
 import {getTimestamp} from "../timestamps";
 import {KICK_UNCONFIRMED_THRESHOLD_SECONDS} from "../config";
@@ -42,7 +42,11 @@ export default function cleanNotConfirmed() {
     ])
         .then(groups => {
             groups.forEach(({last_event}) => {
-                kickMemberAndDeleteMessage(last_event, last_event.meta.confirm_id);
+                clearMember({
+                    ...last_event,
+                    last_message_id: last_event.conversation_message_id,
+                    confirm_message_id: last_event.conversation_message_id
+                });
             });
         });
 }

@@ -39,4 +39,4 @@ export const MONGODB_CONN = process.env.SPAM_CHKA_MONGODB_CONN;
 export const REDIS_CONN = process.env.SPAM_CHKA_REDIS_CONN;
 
 // developers chats (for testing etc)
-export const DEV_CHATS = process.env.SPAM_CHKA_DEV_CHATS.split(",").map(parseInt);
+export const DEV_CHATS = process.env.SPAM_CHKA_DEV_CHATS.split(",").map(x => parseInt(x));

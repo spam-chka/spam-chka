@@ -1,5 +1,5 @@
 import {Request, Response} from "express";
-import {VKRequestBody} from "./vkRequestTypes";
+import {VKRequestBody} from "./types";
 import {VK_GROUP_CONFIRMATION, VK_GROUP_ID} from "../config";
 
 type ConfirmationBody = VKRequestBody & {
