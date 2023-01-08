@@ -8,6 +8,8 @@ export const KICK_UNCONFIRMED_THRESHOLD_SECONDS = 120;
 
 // server port
 export const PORT = process.env.SPAM_CHKA_PORT || 3000;
+// internal server port
+export const INTERNAL_PORT = process.env.SPAM_CHKA_INTERNAL_PORT || 50000;
 
 // group id
 export const VK_GROUP_ID = parseInt(process.env.SPAM_CHKA_GROUP_ID || "");
@@ -40,3 +42,7 @@ export const REDIS_CONN = process.env.SPAM_CHKA_REDIS_CONN;
 
 // developers chats (for testing etc)
 export const DEV_CHATS = process.env.SPAM_CHKA_DEV_CHATS.split(",").map(x => parseInt(x));
+
+// log directory and file
+export const LOG_DIRECTORY = process.env.SPAM_CHKA_LOG_DIRECTORY || "./logs";
+export const LOG_FILE = "today.log";

@@ -5,6 +5,8 @@ import messageNew from "./messageNew";
 import {VKRequestHandler, VKRequestBody, VKRequestType} from "./types";
 import messageEvent from "./messageEvent";
 import {VK_SECRET} from "../config";
+import log from "../log";
+import {getTimestamp} from "../timestamps";
 
 const handlers: {
     [key in VKRequestType]: VKRequestHandler
@@ -29,8 +31,10 @@ export default function vkCallbackHandler(request: Request, response: Response) 
             return handler(request, response);
         }
     } catch (err) {
-        console.error(err);
-        return response.status(400).send();
+        log({ts: getTimestamp(), level: "error", payload: err, tag: "vk.callback"}).then(() => {
+            response.status(400).send();
+        });
+        return;
     }
     return response.status(404).send();
 }
