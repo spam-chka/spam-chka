@@ -38,13 +38,13 @@ export async function clearMember(
 ): Promise<void> {
     // kick user
     try {
-        await kickMember({member_id, peer_id});
         await Event.create({
             peer_id,
             member_id,
             type: Event.EVENT_KICK,
             ts: getTimestamp()
         });
+        await kickMember({member_id, peer_id});
     } catch (err) {
         console.error("kickError", peer_id, member_id, err?.error_code);
     }
