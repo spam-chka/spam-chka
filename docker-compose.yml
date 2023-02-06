@@ -9,16 +9,28 @@ services:
       - .env
     networks:
       - main
+    deploy:
+      resources:
+        limits:
+          memory: 100M
 
   mongo:
     image: mongo
     networks:
       - main
+    deploy:
+      resources:
+        limits:
+          memory: 350M
 
   redis:
     image: redis
     networks:
       - main
+    deploy:
+      resources:
+        limits:
+          memory: 50M
 
 networks:
   main: { }
