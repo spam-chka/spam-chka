@@ -1,6 +1,7 @@
 FROM node:lts-alpine
 WORKDIR /app
-ADD build/ package.json ./
+ADD build/ ./build/
+ADD package.json ./
 RUN npm install
-ENTRYPOINT cd /app && npm run serve
+ENTRYPOINT npm run serve
 EXPOSE 3000
