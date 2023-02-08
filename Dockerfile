@@ -2,5 +2,5 @@ FROM node:lts-alpine
 COPY build/ /app/build/
 COPY package.json /app/package.json
 RUN cd /app && npm install && npm install pm2 -g
-ENTRYPOINT cd /app && npm run serve 2>&1
+CMD ["pm2-runtime", "/app/build/main.js"]
 EXPOSE 3000
