@@ -1,4 +1,4 @@
-FROM node:lts-alpine
+FROM node
 COPY build/ /app/build/
 COPY package.json /app/package.json
 RUN cd /app && npm install && npm install pm2 -g
