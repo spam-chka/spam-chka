@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc --noEmit && esbuild src/main.ts --bundle --platform=node --packages=external --minify --outdir=build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "node build/main.js"
+    "serve": "pm2 start build/main.js"
   },
   "keywords": [],
   "author": "",
