@@ -1,4 +1,4 @@
-FROM node:16
+FROM node:lts-alpine
 COPY build/ /app/build/
 COPY package.json /app/package.json
 RUN cd /app && npm install
