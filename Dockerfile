@@ -1,6 +1,6 @@
-FROM node
-COPY build/ /app/build/
-COPY package.json /app/package.json
-RUN cd /app && npm install
+FROM node:lts-alpine
+WORKDIR /app
+ADD build/ package.json
+RUN npm install
 ENTRYPOINT npm run serve
 EXPOSE 3000
